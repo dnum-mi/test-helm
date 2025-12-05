@@ -1,0 +1,16 @@
+name: Release Charts
+
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - 'charts/**'
+  workflow_dispatch:
+
+jobs:
+  release-charts:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/release-helm.yml@main
+    with:
+      CHARTS_DIR: ./charts
+      HELM_REPOS: "bitnami=https://charts.bitnami.com/bitnami,hashicorp=https://helm.releases.hashicorp.com,cnpg=https://cloudnative-pg.github.io/charts"

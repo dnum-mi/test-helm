@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+    types:
+    - opened
+    - reopened
+    - synchronize
+    - ready_for_review
+    paths:
+    - 'charts/**'
+  workflow_dispatch:
+
+env:
+  CT_CONF_PATH: ci/configs/ct.yaml
+
+jobs:
+  expose-vars:
+    runs-on: ubuntu-latest
+    outputs:
+      CT_CONF_PATH: ${{ env.CT_CONF_PATH }}
+    steps:
+    - name: Exposing env vars
+      run: echo "Exposing env vars"
+
+  lint-helm-docs:
+    uses: this-is-tobi/github-workflows/.github/workflows/lint-helm.yml@main
+    needs:
+    - expose-vars
+    permissions:
+      contents: read
+    with:
+      HELM_DOCS_VERSION: 1.14.2
+      CT_CONF_PATH: ${{ needs.expose-vars.outputs.CT_CONF_PATH }}
+      LINT_CHARTS: false
+      LINT_DOCS: true
+
+  lint-helm-charts:
+    uses: this-is-tobi/github-workflows/.github/workflows/lint-helm.yml@main
+    needs:
+    - expose-vars
+    permissions:
+      contents: read
+    with:
+      HELM_DOCS_VERSION: 1.14.2
+      CT_CONF_PATH: ${{ needs.expose-vars.outputs.CT_CONF_PATH }}
+      LINT_CHARTS: true
+      LINT_DOCS: false
+
+  test-helm-charts:
+    uses: this-is-tobi/github-workflows/.github/workflows/test-helm.yml@main
+    needs:
+    - expose-vars
+    with:
+      CT_CONF_PATH: ${{ needs.expose-vars.outputs.CT_CONF_PATH }}
