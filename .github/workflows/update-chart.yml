@@ -39,9 +39,7 @@ on:
       CHART_NAME:
         description: Name of the folder chart (in /charts)
         required: true
-        type: choice
-        options:
-        - my-project
+        type: string
       APP_VERSION:
         description: The app version to inject in Chart.yaml
         required: true
@@ -69,6 +67,7 @@ jobs:
       issues: write
       pull-requests: write
       contents: write
+      actions: write
     with:
       RUN_MODE: ${{ inputs.RUN_MODE }}
       CHART_NAME: ${{ inputs.CHART_NAME }}
