@@ -24,7 +24,7 @@ jobs:
       run: echo "Exposing env vars"
 
   lint-helm-docs:
-    uses: this-is-tobi/github-workflows/.github/workflows/lint-helm.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/lint-helm.yml@main
     needs:
     - expose-vars
     permissions:
@@ -36,7 +36,7 @@ jobs:
       LINT_DOCS: true
 
   lint-helm-charts:
-    uses: this-is-tobi/github-workflows/.github/workflows/lint-helm.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/lint-helm.yml@main
     needs:
     - expose-vars
     permissions:
@@ -48,7 +48,7 @@ jobs:
       LINT_DOCS: false
 
   test-helm-charts:
-    uses: this-is-tobi/github-workflows/.github/workflows/test-helm.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/test-helm.yml@main
     needs:
     - expose-vars
     with:

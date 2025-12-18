@@ -62,7 +62,7 @@ on:
 
 jobs:
   bump-chart:
-    uses: this-is-tobi/github-workflows/.github/workflows/update-helm-chart.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/update-helm-chart.yml@main
     permissions:
       issues: write
       pull-requests: write
