@@ -14,3 +14,17 @@ jobs:
     with:
       CHARTS_DIR: ./charts
       HELM_REPOS: "bitnami=https://charts.bitnami.com/bitnami,hashicorp=https://helm.releases.hashicorp.com,cnpg=https://cloudnative-pg.github.io/charts"
+
+  sync-cpin:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/sync-cpin.yml@main
+    needs:
+    - release-charts
+    permissions:
+      contents: write
+    with:
+      GITLAB_URL: ${{ vars.GITLAB_URL }}
+      GIT_MIRROR_PROJECT_ID: ${{ vars.GIT_MIRROR_PROJECT_ID }}
+      BRANCH_TO_SYNC: main
+      REPOSITORY_NAME: ${{ vars.REPOSITORY_NAME }}
+    secrets:
+      GIT_MIRROR_TOKEN: ${{ secrets.GIT_MIRROR_TOKEN }}
