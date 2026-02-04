@@ -17,11 +17,19 @@ env:
 jobs:
   expose-vars:
     runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request.draft }}
     outputs:
       CT_CONF_PATH: ${{ env.CT_CONF_PATH }}
     steps:
     - name: Exposing env vars
       run: echo "Exposing env vars"
+
+  lint-commits:
+    uses: dnum-mi/fabnum-cicd/.github/workflows/lint-commits.yml@main
+    if: ${{ !github.event.pull_request.draft }}
+    permissions:
+      pull-requests: read
+      contents: read
 
   lint-helm-docs:
     uses: dnum-mi/fabnum-cicd/.github/workflows/lint-helm.yml@main
@@ -30,7 +38,7 @@ jobs:
     permissions:
       contents: read
     with:
-      HELM_DOCS_VERSION: 1.14.2
+      HELM_DOCS_VERSION: v1.14.2
       CT_CONF_PATH: ${{ needs.expose-vars.outputs.CT_CONF_PATH }}
       LINT_CHARTS: false
       LINT_DOCS: true
@@ -42,7 +50,7 @@ jobs:
     permissions:
       contents: read
     with:
-      HELM_DOCS_VERSION: 1.14.2
+      HELM_DOCS_VERSION: v1.14.2
       CT_CONF_PATH: ${{ needs.expose-vars.outputs.CT_CONF_PATH }}
       LINT_CHARTS: true
       LINT_DOCS: false

@@ -1,0 +1,15 @@
+{{- if and .Values.client.serviceAccount.enabled .Values.client.serviceAccount.clusterRole.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ printf "%s-%s" (include "helper.fullname" .) "client" }}
+  labels: {{- (include "helper.labels" (dict "root" . "componentName" "client")) | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ printf "%s-%s" (include "helper.fullname" .) "client" }}
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.client.serviceAccount.name | default (printf "%s-%s" (include "helper.fullname" .) "client") }}
+  namespace: {{ .Release.Namespace }}
+{{- end }}

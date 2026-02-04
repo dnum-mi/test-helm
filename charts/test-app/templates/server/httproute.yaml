@@ -1,0 +1,115 @@
+{{- if .Values.server.httpRoute.enabled -}}
+{{- $fullNameApp := printf "%s-%s" (include "helper.fullname" .) "server" -}}
+{{- $svcPortApp := .Values.server.service.port -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ printf "%s-%s" (include "helper.fullname" .) "server" }}
+  labels: {{- (include "helper.labels" (dict "root" . "componentName" "server")) | nindent 4 }}
+  {{- if .Values.server.httpRoute.labels }}
+    {{- toYaml .Values.server.httpRoute.labels | nindent 4 }}
+  {{- end }}
+  {{- if .Values.server.httpRoute.annotations }}
+  annotations:
+    {{- tpl (toYaml .Values.server.httpRoute.annotations) . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.server.httpRoute.parentRefs }}
+  parentRefs:
+  {{- range .Values.server.httpRoute.parentRefs }}
+  - name: {{ .name }}
+    {{- if .namespace }}
+    namespace: {{ .namespace }}
+    {{- end }}
+    {{- if .sectionName }}
+    sectionName: {{ .sectionName }}
+    {{- end }}
+    {{- if .port }}
+    port: {{ .port }}
+    {{- end }}
+    {{- if .group }}
+    group: {{ .group }}
+    {{- end }}
+    {{- if .kind }}
+    kind: {{ .kind }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.server.httpRoute.hostnames }}
+  hostnames:
+  {{- range .Values.server.httpRoute.hostnames }}
+  - {{ . | quote }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.server.httpRoute.rules }}
+  rules:
+  {{- range .Values.server.httpRoute.rules }}
+  {{- if .matches }}
+  - matches:
+    {{- range .matches }}
+    {{- if .path }}
+    - path:
+        type: {{ .path.type | default "PathPrefix" }}
+        value: {{ .path.value | default "/" }}
+    {{- end }}
+      {{- if .headers }}
+      headers:
+      {{- range .headers }}
+      - type: {{ .type | default "Exact" }}
+        name: {{ .name }}
+        value: {{ .value }}
+      {{- end }}
+      {{- end }}
+      {{- if .queryParams }}
+      queryParams:
+      {{- range .queryParams }}
+      - type: {{ .type | default "Exact" }}
+        name: {{ .name }}
+        value: {{ .value }}
+      {{- end }}
+      {{- end }}
+      {{- if .method }}
+      method: {{ .method }}
+      {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if .filters }}
+    filters:
+    {{- toYaml .filters | nindent 4 }}
+    {{- end }}
+    {{- if .backendRefs }}
+    backendRefs:
+    {{- range .backendRefs }}
+    - name: {{ .name | default $fullNameApp }}
+      port: {{ .port | default $svcPortApp }}
+      {{- if .weight }}
+      weight: {{ .weight }}
+      {{- end }}
+      {{- if .group }}
+      group: {{ .group }}
+      {{- end }}
+      {{- if .kind }}
+      kind: {{ .kind }}
+      {{- end }}
+      {{- if .namespace }}
+      namespace: {{ .namespace }}
+      {{- end }}
+    {{- end }}
+    {{- else }}
+    backendRefs:
+    - name: {{ $fullNameApp }}
+      port: {{ $svcPortApp }}
+    {{- end }}
+  {{- end }}
+  {{- else }}
+  {{/* Default rule when no rules specified */}}
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: "/"
+    backendRefs:
+    - name: {{ $fullNameApp }}
+      port: {{ $svcPortApp }}
+  {{- end }}
+{{- end }}

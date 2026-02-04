@@ -1,0 +1,14 @@
+{{- if or .Values.client.envCm .Values.global.envCm -}}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ printf "%s-%s" (include "helper.fullname" .) "client" }}
+  labels: {{- (include "helper.labels" (dict "root" . "componentName" "client")) | nindent 4 }}
+data:
+  {{- if .Values.global.envCm -}}
+  {{- include "helper.env" .Values.global.envCm | indent 2 }}
+  {{- end -}}
+  {{- if .Values.client.envCm -}}
+  {{- include "helper.env" .Values.client.envCm | indent 2 }}
+  {{- end -}}
+{{- end -}}

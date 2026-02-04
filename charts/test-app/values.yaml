@@ -4,15 +4,50 @@ nameOverride: ""
 # -- String to fully override the default application name.
 # @section -- General
 fullnameOverride: ""
+# -- Add labels to all the deployed resources
+# @section -- General
+commonLabels: {}
 
 global:
-  # -- Map of environment variables to inject into all containers.
+  # -- Map or array of environment variables to inject into all containers (`valueFrom` supported).
   # @section -- Global
   env: {}
-  # -- Map of environment variables to inject into all containers.
+  # A: "A"
+  # B:
+  #   valueFrom:
+  #     configMapKeyRef:
+  #       name: "my-config"
+  #       key: "B"
+  # C:
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: "my-secret"
+  #       key: "C"
+  #
+  # - name: "A"
+  #   value: "A"
+  # - name: "B"
+  #   valueFrom:
+  #     configMapKeyRef:
+  #       name: "my-config"
+  #       key: "B"
+  # - name: "C"
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: "my-secret"
+  #       key: "C"
+  # -- Map of environment variables to inject into a configmap loaded by all containers (`valueFrom` not supported).
   # @section -- Global
-  secrets: {}
-  # -- Whether or not ingress should be enabled globally, it could be shared by all components that support ingress.
+  envCm: {}
+  # D: "D"
+  # -- Map of environment variables to inject into a secret loaded by all containers (`valueFrom` not supported).
+  # @section -- Global
+  envSecret: {}
+  # E: "E"
+  # -- Global Docker image registry
+  # @section -- Global
+  imageRegistry: ""
+  # -- Globally shared ingress configuration.
   # @section -- Global
   ingress: {}
   # enabled: false
@@ -30,73 +65,252 @@ global:
   # - secretName: domain.local-tls
   #   hosts:
   #   - domain.local
+  # -- Globally shared httproute configuration.
+  # @section -- Global
+  httpRoute: {}
+  # enabled: false
+  # annotations: {}
+  # labels: {}
+  # parentRefs: []
+  # - name: my-gateway
+  #   namespace: gateway-namespace
+  #   sectionName: https
+  # hostnames: []
+  # - "example.com"
+  # - "*.example.com"
+  # rules: []
+  # - matches:
+  #   - path:
+  #       type: PathPrefix
+  #       value: "/"
+  #     headers:
+  #     - type: Exact
+  #       name: "x-version"
+  #       value: "v1"
+  #     queryParams:
+  #     - type: Exact
+  #       name: "debug"
+  #       value: "true"
+  #     method: GET
+  #   filters:
+  #   - type: RequestHeaderModifier
+  #     requestHeaderModifier:
+  #       add:
+  #       - name: "x-custom-header"
+  #         value: "my-value"
+  #   - type: RequestRedirect
+  #     requestRedirect:
+  #       scheme: https
+  #       port: 443
+  #   backendRefs:
+  #   - name: my-service
+  #     port: 80
+  #     weight: 100
+  #   hosts:
+  #   - domain.local
 
-api:
+## Gateway API configuration (alternative to Ingress)
+## Ref: https://gateway-api.sigs.k8s.io/
+gateway:
+  # -- Create a Gateway resource. Usually, you reference an existing Gateway managed by the infrastructure team.
+  # @section -- Global
+  create: false
+  # -- Name of the Gateway resource. If not set, uses the release fullname.
+  # @section -- Global
+  name: ""
+  # -- GatewayClass name. Required when creating a Gateway.
+  # @section -- Global
+  className: ""
+  # -- Additional gateway annotations.
+  # @section -- Global
+  annotations: {}
+  # -- Additional gateway labels.
+  # @section -- Global
+  labels: {}
+  # -- Gateway addresses configuration.
+  # @section -- Global
+  addresses: []
+  # - type: IPAddress
+  #   value: "192.168.1.100"
+  # - type: Hostname
+  #   value: "gateway.example.com"
+  # -- Gateway listeners configuration.
+  # @section -- Global
+  listeners: []
+  # - name: http
+  #   port: 80
+  #   protocol: HTTP
+  #   hostname: "*.example.com"
+  #   allowedRoutes:
+  #     namespaces:
+  #       from: Same  # Same, All, or Selector
+  #     kinds:
+  #     - kind: HTTPRoute
+  # - name: https
+  #   port: 443
+  #   protocol: HTTPS
+  #   hostname: "*.example.com"
+  #   tls:
+  #     mode: Terminate  # Terminate or Passthrough
+  #     certificateRefs:
+  #     - kind: Secret
+  #       name: example-com-tls
+  #   allowedRoutes:
+  #     namespaces:
+  #       from: Same
+
+server:
   # -- Should the app run as a StatefulSet instead of a Deployment.
-  # @section -- Api
+  # @section -- Server
   statefulset: false
   # -- The number of application controller pods to run.
-  # @section -- Api
+  # @section -- Server
   replicaCount: 1
   image:
+    # -- Registry to use for the app.
+    # @section -- Server
+    registry: "harbor.sdid.cpin.numerique-interieur.com"  # "ghcr.io"
     # -- Repository to use for the app.
-    # @section -- Api
-    repository: "ghcr.io/dnum-mi/test-app-api"
+    # @section -- Server
+    repository: "tobi/server"  # "dnum-mi/test-app/server"
     # -- Image pull policy for the app.
-    # @section -- Api
+    # @section -- Server
     pullPolicy: "IfNotPresent"
     # -- Tag to use for the app.
-    # @section -- Api
+    # @section -- Server
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
   ingress:
     # -- Whether or not ingress should be enabled.
-    # @section -- Api
+    # @section -- Server
     enabled: false
     # -- Defines which ingress controller will implement the resource.
-    # @section -- Api
+    # @section -- Server
     className: ""
     # -- Additional ingress annotations.
-    # @section -- Api
+    # @section -- Server
     annotations: {}
     # -- Additional ingress labels.
-    # @section -- Api
+    # @section -- Server
     labels: {}
     hosts:
       - backend:
           # -- Name of the backend service linked to the host record (leave empty to use the app service).
-          # @section -- Api
+          # @section -- Server
           serviceName: ""
           # -- Port used by the backend service linked to the host record (leave null to use the app service port).
-          # @section -- Api
+          # @section -- Server
           portNumber: null
         # -- Name of the host record.
-        # @section -- Api
+        # @section -- Server
         name: "domain.local"
         # -- Path type of the host record.
-        # @section -- Api
+        # @section -- Server
         pathType: "Prefix"
         # -- Path of the host record to manage routing.
-        # @section -- Api
+        # @section -- Server
         path: "/"
     # -- Enable TLS configuration.
-    # @section -- Api
+    # @section -- Server
     tls: []
     # - secretName: domain.local-tls
     #   hosts:
     #   - domain.local
+  ## Gateway API HTTPRoute configuration (alternative to Ingress)
+  ## Ref: https://gateway-api.sigs.k8s.io/api-types/httproute/
+  httpRoute:
+    # -- Enable an HTTPRoute resource for this service.
+    # @section -- Server
+    enabled: false
+    # -- Additional HTTPRoute annotations.
+    # @section -- Server
+    annotations: {}
+    # -- Additional HTTPRoute labels.
+    # @section -- Server
+    labels: {}
+    # -- Parent references (Gateways) to attach the HTTPRoute to.
+    # @section -- Server
+    parentRefs: []
+    # - name: my-gateway
+    #   namespace: gateway-namespace  # optional
+    #   sectionName: https            # optional, specific listener name
+    # -- Hostnames for the HTTPRoute to match.
+    # @section -- Server
+    hostnames: []
+    # - "example.com"
+    # - "api.example.com"
+    # -- Routing rules for the HTTPRoute.
+    # @section -- Server
+    rules: []
+    # - matches:
+    #   - path:
+    #       type: PathPrefix     # PathPrefix, Exact, or RegularExpression
+    #       value: "/"
+    #     headers:
+    #     - type: Exact
+    #       name: "x-version"
+    #       value: "v1"
+    #     method: GET
+    #   filters:
+    #   - type: RequestHeaderModifier
+    #     requestHeaderModifier:
+    #       add:
+    #       - name: "x-custom-header"
+    #         value: "my-value"
+    #   backendRefs:
+    #   - name: my-service       # defaults to chart service if not set
+    #     port: 80               # defaults to service port if not set
+    #     weight: 100            # for traffic splitting
+  ## Gateway API GRPCRoute configuration (for gRPC services)
+  ## Ref: https://gateway-api.sigs.k8s.io/api-types/grpcroute/
+  grpcRoute:
+    # -- Enable a GRPCRoute resource for this service.
+    # @section -- Server
+    enabled: false
+    # -- Additional GRPCRoute annotations.
+    # @section -- Server
+    annotations: {}
+    # -- Additional GRPCRoute labels.
+    # @section -- Server
+    labels: {}
+    # -- Parent references (Gateways) to attach the GRPCRoute to.
+    # @section -- Server
+    parentRefs: []
+    # - name: my-gateway
+    #   namespace: gateway-namespace
+    #   sectionName: grpc
+    # -- Hostnames for the GRPCRoute to match.
+    # @section -- Server
+    hostnames: []
+    # - "grpc.example.com"
+    # -- Routing rules for the GRPCRoute.
+    # @section -- Server
+    rules: []
+    # - matches:
+    #   - method:
+    #       type: Exact          # Exact or RegularExpression
+    #       service: "mypackage.MyService"
+    #       method: "MyMethod"
+    #     headers:
+    #     - type: Exact
+    #       name: "x-version"
+    #       value: "v1"
+    #   backendRefs:
+    #   - name: my-grpc-service
+    #     port: 50051
+    #     weight: 100
   # -- Annotations for the app deployed pods.
-  # @section -- Api
+  # @section -- Server
   podAnnotations: {}
   # -- Labels for the app deployed pods.
-  # @section -- Api
+  # @section -- Server
   podLabels: {}
   # -- Toggle and define pod-level security context.
-  # @section -- Api
+  # @section -- Server
   podSecurityContext: {}
   # fsGroup: 2000
   # -- Init containers to add to the app pod.
-  # @section -- Api
+  # @section -- Server
   initContainers: []
   # - name: wait-for-keycloak
   #   image: docker.io/curlimages/curl:latest
@@ -109,32 +323,32 @@ api:
   #   - mountPath: /custom-volume
   #     name: custom-volume
   # -- Extra containers to add to the app pod as sidecars.
-  # @section -- Api
+  # @section -- Server
   extraContainers: []
   # - name: fluentd
   #   image: "fluentd"
   #   volumeMounts:
   #     - mountPath: /my-volume/config
   #       name: config
-  # -- Api container port number.
-  # @section -- Api
-  containerPort: &apiContainerPort 8080
-  # -- Api container port name.
-  # @section -- Api
+  # -- Server container port number.
+  # @section -- Server
+  containerPort: &serverContainerPort 8080
+  # -- Server container port name.
+  # @section -- Server
   containerPortName: "http"
-  # -- Api extra container ports.
-  # @section -- Api
+  # -- Server extra container ports.
+  # @section -- Server
   extraPorts: []
   # - containerPort: 9090
   #   protocol: "TCP"
-  # -- Api container command.
-  # @section -- Api
+  # -- Server container command.
+  # @section -- Server
   command: []
-  # -- Api container command args.
-  # @section -- Api
+  # -- Server container command args.
+  # @section -- Server
   args: []
   # -- Toggle and define container-level security context.
-  # @section -- Api
+  # @section -- Server
   securityContext: {}
   # capabilities:
   #   drop:
@@ -142,102 +356,131 @@ api:
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
   # runAsUser: 1000
-  # -- Api container env variables loaded from configmap or secret reference.
-  # @section -- Api
+  # -- Server container env variables loaded from configmap or secret reference.
+  # @section -- Server
   envFrom: []
   # - configMapRef:
   #     name: my-config
   # - secretRef:
   #     name: my-secret
-  # -- Api container env variables, it will be injected into a configmap and loaded into the container.
-  # @section -- Api
+  # -- Map or array of environment variables to inject into the app container (`valueFrom` supported).
+  # @section -- Global
   env: {}
-  # -- Api container env secrets, it will be injected into a secret and loaded into the container.
-  # @section -- Api
-  secrets: {}
+  # A: "A"
+  # B:
+  #   valueFrom:
+  #     configMapKeyRef:
+  #       name: "my-config"
+  #       key: "B"
+  # C:
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: "my-secret"
+  #       key: "C"
+  #
+  # - name: "A"
+  #   value: "A"
+  # - name: "B"
+  #   valueFrom:
+  #     configMapKeyRef:
+  #       name: "my-config"
+  #       key: "B"
+  # - name: "C"
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: "my-secret"
+  #       key: "C"
+  # -- Map of environment variables to inject into a configmap loaded by the app container (`valueFrom` not supported).
+  # @section -- Global
+  envCm: {}
+  # D: "D"
+  # -- Map of environment variables to inject into a secret loaded by the app container (`valueFrom` not supported).
+  # @section -- Global
+  envSecret: {}
+  # E: "E"
   probes:
     startupProbe:
       httpGet:
-        # -- Api container healthcheck endpoint (startupProbe is defined using `toYaml` so it is possible to override it completely).
-        # @section -- Api
+        # -- Server container healthcheck endpoint (startupProbe is defined using `toYaml` so it is possible to override it completely).
+        # @section -- Server
         path: "/"
         # -- Port to use for healthcheck (defaults to container port).
-        # @section -- Api
-        port: *apiContainerPort
+        # @section -- Server
+        port: *serverContainerPort
       # -- Number of seconds after the container has started before probe is initiated.
-      # @section -- Api
+      # @section -- Server
       initialDelaySeconds: 0
       # -- Minimum consecutive successes for the probe to be considered successful after having failed.
-      # @section -- Api
+      # @section -- Server
       successThreshold: 1
       # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
-      # @section -- Api
+      # @section -- Server
       failureThreshold: 10
       # -- How often (in seconds) to perform the probe.
-      # @section -- Api
+      # @section -- Server
       periodSeconds: 10
       # -- Number of seconds after which the probe times out.
-      # @section -- Api
+      # @section -- Server
       timeoutSeconds: 5
     readinessProbe:
       httpGet:
-        # -- Api container healthcheck endpoint (readinessProbe is defined using `toYaml` so it is possible to override it completely).
-        # @section -- Api
+        # -- Server container healthcheck endpoint (readinessProbe is defined using `toYaml` so it is possible to override it completely).
+        # @section -- Server
         path: "/"
         # -- Port to use for healthcheck (defaults to container port).
-        # @section -- Api
-        port: *apiContainerPort
+        # @section -- Server
+        port: *serverContainerPort
       # -- Number of seconds after the container has started before probe is initiated.
-      # @section -- Api
+      # @section -- Server
       initialDelaySeconds: 10
       # -- Minimum consecutive successes for the probe to be considered successful after having failed.
-      # @section -- Api
+      # @section -- Server
       successThreshold: 2
       # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
-      # @section -- Api
+      # @section -- Server
       failureThreshold: 2
       # -- How often (in seconds) to perform the probe.
-      # @section -- Api
+      # @section -- Server
       periodSeconds: 10
       # -- Number of seconds after which the probe times out.
-      # @section -- Api
+      # @section -- Server
       timeoutSeconds: 5
     livenessProbe:
       httpGet:
-        # -- Api container healthcheck endpoint (livenessProbe is defined using `toYaml` so it is possible to override it completely).
-        # @section -- Api
+        # -- Server container healthcheck endpoint (livenessProbe is defined using `toYaml` so it is possible to override it completely).
+        # @section -- Server
         path: "/"
         # -- Port to use for healthcheck (defaults to container port).
-        # @section -- Api
-        port: *apiContainerPort
+        # @section -- Server
+        port: *serverContainerPort
       # -- Number of seconds after the container has started before probe is initiated.
-      # @section -- Api
+      # @section -- Server
       initialDelaySeconds: 30
       # -- Minimum consecutive successes for the probe to be considered successful after having failed.
-      # @section -- Api
+      # @section -- Server
       successThreshold: 1
       # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
-      # @section -- Api
+      # @section -- Server
       failureThreshold: 3
       # -- How often (in seconds) to perform the probe.
-      # @section -- Api
+      # @section -- Server
       periodSeconds: 30
       # -- Number of seconds after which the probe times out.
-      # @section -- Api
+      # @section -- Server
       timeoutSeconds: 5
   strategy:
     # -- Strategy type used to replace old Pods by new ones, can be `Recreate` or `RollingUpdate`.
-    # @section -- Api
+    # @section -- Server
     type: "RollingUpdate"
     rollingUpdate:
       # -- The maximum number of pods that can be unavailable during the update process.
-      # @section -- Api
+      # @section -- Server
       maxUnavailable: 1
       # -- The maximum number of pods that can be scheduled above the desired number of pods.
-      # @section -- Api
+      # @section -- Server
       maxSurge: 1
   # -- Image credentials configuration.
-  # @section -- Api
+  # @section -- Server
   imagePullSecrets: []
   # - name: "pullsecret-name-1"
   #   create: false
@@ -248,7 +491,7 @@ api:
   #   password: ""
   #   email: ""
   # -- Host aliases that will be injected at pod-level into /etc/hosts.
-  # @section -- Api
+  # @section -- Server
   hostAliases: []
   # - ip: "127.0.0.1"
   #   hostnames:
@@ -259,7 +502,7 @@ api:
   #   - "foo.remote"
   #   - "bar.remote"
   # -- List of volumes to add.
-  # @section -- Api
+  # @section -- Server
   volumes: []
   # - name: config-volume
   #   configMap:
@@ -275,7 +518,7 @@ api:
   #     reference: quay.io/crio/artifact:v2
   #     pullPolicy: IfNotPresent
   # -- List of volumeClaims to add.
-  # @section -- Api
+  # @section -- Server
   volumeClaims: []
   # - metadata:
   #     name: app-volume
@@ -286,7 +529,7 @@ api:
   #       requests:
   #         storage: 1Gi
   # -- List of mounts to add (normally used with `volumes` or `volumeClaims`).
-  # @section -- Api
+  # @section -- Server
   volumeMounts: []
   # - name: config-volume
   #   mountPath: /app/config
@@ -302,75 +545,75 @@ api:
   #   mountPath: /app/storage
   service:
     # -- Type of service to create for the app.
-    # @section -- Api
+    # @section -- Server
     type: "ClusterIP"
     # -- Port used by the service.
-    # @section -- Api
+    # @section -- Server
     port: 80
     # -- Port used when type is `NodePort` to expose the service on the given node port.
-    # @section -- Api
+    # @section -- Server
     nodePort: 31000
     # -- Port name used by the service.
-    # @section -- Api
+    # @section -- Server
     portName: "http"
     # -- Protocol used by the service.
-    # @section -- Api
+    # @section -- Server
     protocol: "TCP"
     # -- Extra service ports.
-    # @section -- Api
+    # @section -- Server
     extraPorts: []
     # - port: 9090
     #   targetPort: 9090
-    #   protocol: "TCP" 
+    #   protocol: "TCP"
     #   name: "metrics"
   resources:
     requests:
       # -- Memory request for the app.
-      # @section -- Api
-      memory: "64Mi"
+      # @section -- Server
+      memory: "256Mi"
       # -- CPU request for the app.
-      # @section -- Api
-      cpu: "50m"
+      # @section -- Server
+      cpu: "100m"
       # Other stuff like GPU, etc could be added here.
       # nvidia.com/gpu: "1"
       # ephemeral-storage: "100Mi"
     limits:
       # -- Memory limit for the app.
-      # @section -- Api
-      memory: "128Mi"
+      # @section -- Server
+      memory: "256Mi"
       # -- CPU limit for the app.
-      # @section -- Api
-      cpu: "50m"
+      # @section -- Server
+      cpu: "100m"
       # Other stuff like GPU, etc could be added here.
       # nvidia.com/gpu: "1"
       # ephemeral-storage: "500Mi"
   autoscaling:
     # -- Enable Horizontal Pod Autoscaler for the app.
-    # @section -- Api
+    # @section -- Server
     enabled: false
     # -- Minimum number of replicas for the app.
-    # @section -- Api
+    # @section -- Server
     minReplicas: 1
     # -- Maximum number of replicas for the app.
-    # @section -- Api
+    # @section -- Server
     maxReplicas: 3
     # -- Average CPU utilization percentage for the app.
-    # @section -- Api
+    # @section -- Server
     targetCPUUtilizationPercentage: 80
     # -- Average memory utilization percentage for the app.
-    # @section -- Api
+    # @section -- Server
     targetMemoryUtilizationPercentage: 80
   # -- Revision history limit for the app.
-  # @section -- Api
+  # @section -- Server
   revisionHistoryLimit: 10
   # -- Default node selector for app.
-  # @section -- Api
+  # @section -- Server
   nodeSelector: {}
   # kubernetes.io/os: "linux"
   # kubernetes.io/arch: "amd64"
   # kubernetes.io/hostname: "node1"
   # -- Default tolerations for app.
-  # @section -- Api
+  # @section -- Server
   tolerations: []
   # - key: "key1"
   #   operator: "Equal"
@@ -387,7 +630,7 @@ api:
   #   effect: "PreferNoSchedule"
   #   tolerationSeconds: 3600
   # -- Affinity used for app pod.
-  # @section -- Api
+  # @section -- Server
   affinity: {}
   # podAntiAffinity:
   #   requiredDuringSchedulingIgnoredDuringExecution:
@@ -396,30 +639,30 @@ api:
   #       - key: "app.kubernetes.io/name"
   #         operator: "In"
   #         values:
-  #         - "test-app-api"
+  #         - "test-app-server"
   #     topologyKey: "kubernetes.io/hostname"
   serviceAccount:
     # -- Enable the service account.
-    # @section -- Api
+    # @section -- Server
     enabled: false
     # -- Create a service account.
-    # @section -- Api
+    # @section -- Server
     create: false
     # -- Annotations applied to created service account.
-    # @section -- Api
+    # @section -- Server
     annotations: {}
     # -- Service account name.
-    # @section -- Api
+    # @section -- Server
     name: ""
     # -- Should the service account access token be automount in the pod.
-    # @section -- Api
+    # @section -- Server
     automountServiceAccountToken: false
     role:
       # -- Should the role be created.
-      # @section -- Api
+      # @section -- Server
       create: false
       # -- Role rules associated with the service account.
-      # @section -- Api
+      # @section -- Server
       rules: []
       # - apiGroups:
       #   - argoproj.io
@@ -437,10 +680,10 @@ api:
       #   - patch
     clusterRole:
       # -- Should the clusterRole be created.
-      # @section -- Api
+      # @section -- Server
       create: false
       # -- ClusterRole rules associated with the service account.
-      # @section -- Api
+      # @section -- Server
       rules: []
       # - apiGroups:
       #   - argoproj.io
@@ -459,31 +702,31 @@ api:
   ## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
   pdb:
     # -- Deploy a PodDisruptionBudget for the app
-    # @section -- Api
+    # @section -- Server
     enabled: false
     # -- Labels to be added to app pdb.
-    # @section -- Api
+    # @section -- Server
     labels: {}
     # -- Annotations to be added to app pdb.
-    # @section -- Api
+    # @section -- Server
     annotations: {}
     # -- Number of pods that are available after eviction as number or percentage (eg.: 50%).
-    # @section -- Api
+    # @section -- Server
     # @default -- `""` (defaults to 0 if not specified)
     minAvailable: ""
-    # -- Number of pods that are unavailable after eviction as number or percentage (eg.: 50%). Has higher precedence over `api.pdb.minAvailable`.
-    # @section -- Api
+    # -- Number of pods that are unavailable after eviction as number or percentage (eg.: 50%). Has higher precedence over `server.pdb.minAvailable`.
+    # @section -- Server
     maxUnavailable: ""
   networkPolicy:
     # -- Create NetworkPolicy object for the app.
-    # @section -- Api
+    # @section -- Server
     create: false
     # -- Policy types used in the NetworkPolicy object.
-    # @section -- Api
+    # @section -- Server
     policyTypes:
       - Ingress
     # -- Ingress rules for the NetworkPolicy object.
-    # @section -- Api
+    # @section -- Server
     ingress: []
     # - from:
     #   - ipBlock:
@@ -500,7 +743,7 @@ api:
     #   - protocol: TCP
     #     port: 6379
     # -- Egress rules for the NetworkPolicy object.
-    # @section -- Api
+    # @section -- Server
     egress: []
     # - to:
     #   - ipBlock:
@@ -511,141 +754,227 @@ api:
     #     endPort: 32768
   metrics:
     # -- Deploy metrics service.
-    # @section -- Api
+    # @section -- Server
     enabled: false
     service:
       # -- Metrics service annotations.
-      # @section -- Api
+      # @section -- Server
       annotations: {}
       # -- Metrics service labels.
-      # @section -- Api
+      # @section -- Server
       labels: {}
       # -- Metrics service port.
-      # @section -- Api
+      # @section -- Server
       port: 9000
       # -- Metrics service target port.
-      # @section -- Api
+      # @section -- Server
       targetPort: 9000
     serviceMonitor:
       # -- Enable a prometheus ServiceMonitor.
-      # @section -- Api
+      # @section -- Server
       enabled: false
       # -- Prometheus ServiceMonitor labels.
-      # @section -- Api
+      # @section -- Server
       labels: {}
       # -- Prometheus ServiceMonitor annotations.
-      # @section -- Api
+      # @section -- Server
       annotations: {}
       endpoints:
         - basicAuth:
             # -- The secret in the service monitor namespace that contains the username for authentication.
-            # @section -- Api
+            # @section -- Server
             username: ""
             # -- The secret in the service monitor namespace that contains the password for authentication.
-            # @section -- Api
+            # @section -- Server
             password: ""
           bearerTokenSecret:
             # -- Secret name to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator.
-            # @section -- Api
+            # @section -- Server
             name: ""
             # -- Secret key to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator.
-            # @section -- Api
+            # @section -- Server
             key: ""
           # -- Prometheus ServiceMonitor interval.
-          # @section -- Api
+          # @section -- Server
           interval: "30s"
           # -- Prometheus ServiceMonitor scrapeTimeout. If empty, Prometheus uses the global scrape timeout unless it is less than the target's scrape interval value in which the latter is used.
-          # @section -- Api
+          # @section -- Server
           scrapeTimeout: "10s"
           # -- Path used by the Prometheus ServiceMonitor to scrape metrics.
-          # @section -- Api
+          # @section -- Server
           path: "/metrics"
           # -- When true, honorLabels preserves the metric’s labels when they collide with the target’s labels.
-          # @section -- Api
+          # @section -- Server
           honorLabels: false
           # -- Prometheus RelabelConfigs to apply to samples before scraping.
-          # @section -- Api
+          # @section -- Server
           relabelings: []
           # -- Prometheus MetricRelabelConfigs to apply to samples before ingestion.
-          # @section -- Api
+          # @section -- Server
           metricRelabelings: []
           # -- Prometheus ServiceMonitor selector.
-          # @section -- Api
+          # @section -- Server
           selector: {}
           # prometheus: kube-prometheus
           # -- Prometheus ServiceMonitor scheme.
-          # @section -- Api
+          # @section -- Server
           scheme: ""
           # -- Prometheus ServiceMonitor tlsConfig.
-          # @section -- Api
+          # @section -- Server
           tlsConfig: {}
 
-frontend:
+client:
   # -- Should the app run as a StatefulSet instead of a Deployment.
-  # @section -- Frontend
+  # @section -- Client
   statefulset: false
   # -- The number of application controller pods to run.
-  # @section -- Frontend
+  # @section -- Client
   replicaCount: 1
   image:
+    # -- Registry to use for the app.
+    # @section -- Client
+    registry: "harbor.sdid.cpin.numerique-interieur.com"  # "ghcr.io"
     # -- Repository to use for the app.
-    # @section -- Frontend
-    repository: "ghcr.io/dnum-mi/test-app-frontend"
+    # @section -- Client
+    repository: "tobi/client"  # "dnum-mi/test-app/client"
     # -- Image pull policy for the app.
-    # @section -- Frontend
+    # @section -- Client
     pullPolicy: "IfNotPresent"
     # -- Tag to use for the app.
-    # @section -- Frontend
+    # @section -- Client
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
   ingress:
     # -- Whether or not ingress should be enabled.
-    # @section -- Frontend
+    # @section -- Client
     enabled: false
     # -- Defines which ingress controller will implement the resource.
-    # @section -- Frontend
+    # @section -- Client
     className: ""
     # -- Additional ingress annotations.
-    # @section -- Frontend
+    # @section -- Client
     annotations: {}
     # -- Additional ingress labels.
-    # @section -- Frontend
+    # @section -- Client
     labels: {}
     hosts:
       - backend:
           # -- Name of the backend service linked to the host record (leave empty to use the app service).
-          # @section -- Frontend
+          # @section -- Client
           serviceName: ""
           # -- Port used by the backend service linked to the host record (leave null to use the app service port).
-          # @section -- Frontend
+          # @section -- Client
           portNumber: null
         # -- Name of the host record.
-        # @section -- Frontend
+        # @section -- Client
         name: "domain.local"
         # -- Path type of the host record.
-        # @section -- Frontend
+        # @section -- Client
         pathType: "Prefix"
         # -- Path of the host record to manage routing.
-        # @section -- Frontend
+        # @section -- Client
         path: "/"
     # -- Enable TLS configuration.
-    # @section -- Frontend
+    # @section -- Client
     tls: []
     # - secretName: domain.local-tls
     #   hosts:
     #   - domain.local
+  ## Gateway API HTTPRoute configuration (alternative to Ingress)
+  ## Ref: https://gateway-api.sigs.k8s.io/api-types/httproute/
+  httpRoute:
+    # -- Enable an HTTPRoute resource for this service.
+    # @section -- Client
+    enabled: false
+    # -- Additional HTTPRoute annotations.
+    # @section -- Client
+    annotations: {}
+    # -- Additional HTTPRoute labels.
+    # @section -- Client
+    labels: {}
+    # -- Parent references (Gateways) to attach the HTTPRoute to.
+    # @section -- Client
+    parentRefs: []
+    # - name: my-gateway
+    #   namespace: gateway-namespace  # optional
+    #   sectionName: https            # optional, specific listener name
+    # -- Hostnames for the HTTPRoute to match.
+    # @section -- Client
+    hostnames: []
+    # - "example.com"
+    # - "api.example.com"
+    # -- Routing rules for the HTTPRoute.
+    # @section -- Client
+    rules: []
+    # - matches:
+    #   - path:
+    #       type: PathPrefix     # PathPrefix, Exact, or RegularExpression
+    #       value: "/"
+    #     headers:
+    #     - type: Exact
+    #       name: "x-version"
+    #       value: "v1"
+    #     method: GET
+    #   filters:
+    #   - type: RequestHeaderModifier
+    #     requestHeaderModifier:
+    #       add:
+    #       - name: "x-custom-header"
+    #         value: "my-value"
+    #   backendRefs:
+    #   - name: my-service       # defaults to chart service if not set
+    #     port: 80               # defaults to service port if not set
+    #     weight: 100            # for traffic splitting
+  ## Gateway API GRPCRoute configuration (for gRPC services)
+  ## Ref: https://gateway-api.sigs.k8s.io/api-types/grpcroute/
+  grpcRoute:
+    # -- Enable a GRPCRoute resource for this service.
+    # @section -- Client
+    enabled: false
+    # -- Additional GRPCRoute annotations.
+    # @section -- Client
+    annotations: {}
+    # -- Additional GRPCRoute labels.
+    # @section -- Client
+    labels: {}
+    # -- Parent references (Gateways) to attach the GRPCRoute to.
+    # @section -- Client
+    parentRefs: []
+    # - name: my-gateway
+    #   namespace: gateway-namespace
+    #   sectionName: grpc
+    # -- Hostnames for the GRPCRoute to match.
+    # @section -- Client
+    hostnames: []
+    # - "grpc.example.com"
+    # -- Routing rules for the GRPCRoute.
+    # @section -- Client
+    rules: []
+    # - matches:
+    #   - method:
+    #       type: Exact          # Exact or RegularExpression
+    #       service: "mypackage.MyService"
+    #       method: "MyMethod"
+    #     headers:
+    #     - type: Exact
+    #       name: "x-version"
+    #       value: "v1"
+    #   backendRefs:
+    #   - name: my-grpc-service
+    #     port: 50051
+    #     weight: 100
   # -- Annotations for the app deployed pods.
-  # @section -- Frontend
+  # @section -- Client
   podAnnotations: {}
   # -- Labels for the app deployed pods.
-  # @section -- Frontend
+  # @section -- Client
   podLabels: {}
   # -- Toggle and define pod-level security context.
-  # @section -- Frontend
+  # @section -- Client
   podSecurityContext: {}
   # fsGroup: 2000
   # -- Init containers to add to the app pod.
-  # @section -- Frontend
+  # @section -- Client
   initContainers: []
   # - name: wait-for-keycloak
   #   image: docker.io/curlimages/curl:latest
@@ -658,32 +987,32 @@ frontend:
   #   - mountPath: /custom-volume
   #     name: custom-volume
   # -- Extra containers to add to the app pod as sidecars.
-  # @section -- Frontend
+  # @section -- Client
   extraContainers: []
   # - name: fluentd
   #   image: "fluentd"
   #   volumeMounts:
   #     - mountPath: /my-volume/config
   #       name: config
-  # -- Frontend container port number.
-  # @section -- Frontend
-  containerPort: &frontendContainerPort 8080
-  # -- Frontend container port name.
-  # @section -- Frontend
+  # -- Client container port number.
+  # @section -- Client
+  containerPort: &clientContainerPort 8080
+  # -- Client container port name.
+  # @section -- Client
   containerPortName: "http"
-  # -- Frontend extra container ports.
-  # @section -- Frontend
+  # -- Client extra container ports.
+  # @section -- Client
   extraPorts: []
   # - containerPort: 9090
   #   protocol: "TCP"
-  # -- Frontend container command.
-  # @section -- Frontend
+  # -- Client container command.
+  # @section -- Client
   command: []
-  # -- Frontend container command args.
-  # @section -- Frontend
+  # -- Client container command args.
+  # @section -- Client
   args: []
   # -- Toggle and define container-level security context.
-  # @section -- Frontend
+  # @section -- Client
   securityContext: {}
   # capabilities:
   #   drop:
@@ -691,102 +1020,131 @@ frontend:
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
   # runAsUser: 1000
-  # -- Frontend container env variables loaded from configmap or secret reference.
-  # @section -- Frontend
+  # -- Client container env variables loaded from configmap or secret reference.
+  # @section -- Client
   envFrom: []
   # - configMapRef:
   #     name: my-config
   # - secretRef:
   #     name: my-secret
-  # -- Frontend container env variables, it will be injected into a configmap and loaded into the container.
-  # @section -- Frontend
+  # -- Map or array of environment variables to inject into the app container (`valueFrom` supported).
+  # @section -- Global
   env: {}
-  # -- Frontend container env secrets, it will be injected into a secret and loaded into the container.
-  # @section -- Frontend
-  secrets: {}
+  # A: "A"
+  # B:
+  #   valueFrom:
+  #     configMapKeyRef:
+  #       name: "my-config"
+  #       key: "B"
+  # C:
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: "my-secret"
+  #       key: "C"
+  #
+  # - name: "A"
+  #   value: "A"
+  # - name: "B"
+  #   valueFrom:
+  #     configMapKeyRef:
+  #       name: "my-config"
+  #       key: "B"
+  # - name: "C"
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: "my-secret"
+  #       key: "C"
+  # -- Map of environment variables to inject into a configmap loaded by the app container (`valueFrom` not supported).
+  # @section -- Global
+  envCm: {}
+  # D: "D"
+  # -- Map of environment variables to inject into a secret loaded by the app container (`valueFrom` not supported).
+  # @section -- Global
+  envSecret: {}
+  # E: "E"
   probes:
     startupProbe:
       httpGet:
-        # -- Frontend container healthcheck endpoint (startupProbe is defined using `toYaml` so it is possible to override it completely).
-        # @section -- Frontend
+        # -- Client container healthcheck endpoint (startupProbe is defined using `toYaml` so it is possible to override it completely).
+        # @section -- Client
         path: "/"
         # -- Port to use for healthcheck (defaults to container port).
-        # @section -- Frontend
-        port: *frontendContainerPort
+        # @section -- Client
+        port: *clientContainerPort
       # -- Number of seconds after the container has started before probe is initiated.
-      # @section -- Frontend
+      # @section -- Client
       initialDelaySeconds: 0
       # -- Minimum consecutive successes for the probe to be considered successful after having failed.
-      # @section -- Frontend
+      # @section -- Client
       successThreshold: 1
       # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
-      # @section -- Frontend
+      # @section -- Client
       failureThreshold: 10
       # -- How often (in seconds) to perform the probe.
-      # @section -- Frontend
+      # @section -- Client
       periodSeconds: 10
       # -- Number of seconds after which the probe times out.
-      # @section -- Frontend
+      # @section -- Client
       timeoutSeconds: 5
     readinessProbe:
       httpGet:
-        # -- Frontend container healthcheck endpoint (readinessProbe is defined using `toYaml` so it is possible to override it completely).
-        # @section -- Frontend
+        # -- Client container healthcheck endpoint (readinessProbe is defined using `toYaml` so it is possible to override it completely).
+        # @section -- Client
         path: "/"
         # -- Port to use for healthcheck (defaults to container port).
-        # @section -- Frontend
-        port: *frontendContainerPort
+        # @section -- Client
+        port: *clientContainerPort
       # -- Number of seconds after the container has started before probe is initiated.
-      # @section -- Frontend
+      # @section -- Client
       initialDelaySeconds: 10
       # -- Minimum consecutive successes for the probe to be considered successful after having failed.
-      # @section -- Frontend
+      # @section -- Client
       successThreshold: 2
       # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
-      # @section -- Frontend
+      # @section -- Client
       failureThreshold: 2
       # -- How often (in seconds) to perform the probe.
-      # @section -- Frontend
+      # @section -- Client
       periodSeconds: 10
       # -- Number of seconds after which the probe times out.
-      # @section -- Frontend
+      # @section -- Client
       timeoutSeconds: 5
     livenessProbe:
       httpGet:
-        # -- Frontend container healthcheck endpoint (livenessProbe is defined using `toYaml` so it is possible to override it completely).
-        # @section -- Frontend
+        # -- Client container healthcheck endpoint (livenessProbe is defined using `toYaml` so it is possible to override it completely).
+        # @section -- Client
         path: "/"
         # -- Port to use for healthcheck (defaults to container port).
-        # @section -- Frontend
-        port: *frontendContainerPort
+        # @section -- Client
+        port: *clientContainerPort
       # -- Number of seconds after the container has started before probe is initiated.
-      # @section -- Frontend
+      # @section -- Client
       initialDelaySeconds: 30
       # -- Minimum consecutive successes for the probe to be considered successful after having failed.
-      # @section -- Frontend
+      # @section -- Client
       successThreshold: 1
       # -- Minimum consecutive failures for the probe to be considered failed after having succeeded.
-      # @section -- Frontend
+      # @section -- Client
       failureThreshold: 3
       # -- How often (in seconds) to perform the probe.
-      # @section -- Frontend
+      # @section -- Client
       periodSeconds: 30
       # -- Number of seconds after which the probe times out.
-      # @section -- Frontend
+      # @section -- Client
       timeoutSeconds: 5
   strategy:
     # -- Strategy type used to replace old Pods by new ones, can be `Recreate` or `RollingUpdate`.
-    # @section -- Frontend
+    # @section -- Client
     type: "RollingUpdate"
     rollingUpdate:
       # -- The maximum number of pods that can be unavailable during the update process.
-      # @section -- Frontend
+      # @section -- Client
       maxUnavailable: 1
       # -- The maximum number of pods that can be scheduled above the desired number of pods.
-      # @section -- Frontend
+      # @section -- Client
       maxSurge: 1
   # -- Image credentials configuration.
-  # @section -- Frontend
+  # @section -- Client
   imagePullSecrets: []
   # - name: "pullsecret-name-1"
   #   create: false
@@ -797,7 +1155,7 @@ frontend:
   #   password: ""
   #   email: ""
   # -- Host aliases that will be injected at pod-level into /etc/hosts.
-  # @section -- Frontend
+  # @section -- Client
   hostAliases: []
   # - ip: "127.0.0.1"
   #   hostnames:
@@ -808,7 +1166,7 @@ frontend:
   #   - "foo.remote"
   #   - "bar.remote"
   # -- List of volumes to add.
-  # @section -- Frontend
+  # @section -- Client
   volumes: []
   # - name: config-volume
   #   configMap:
@@ -824,7 +1182,7 @@ frontend:
   #     reference: quay.io/crio/artifact:v2
   #     pullPolicy: IfNotPresent
   # -- List of volumeClaims to add.
-  # @section -- Frontend
+  # @section -- Client
   volumeClaims: []
   # - metadata:
   #     name: app-volume
@@ -835,7 +1193,7 @@ frontend:
   #       requests:
   #         storage: 1Gi
   # -- List of mounts to add (normally used with `volumes` or `volumeClaims`).
-  # @section -- Frontend
+  # @section -- Client
   volumeMounts: []
   # - name: config-volume
   #   mountPath: /app/config
@@ -851,74 +1209,75 @@ frontend:
   #   mountPath: /app/storage
   service:
     # -- Type of service to create for the app.
-    # @section -- Frontend
+    # @section -- Client
     type: "ClusterIP"
     # -- Port used by the service.
-    # @section -- Frontend
+    # @section -- Client
     port: 80
     # -- Port used when type is `NodePort` to expose the service on the given node port.
-    # @section -- Frontend
+    # @section -- Client
     nodePort: 31000
     # -- Port name used by the service.
-    # @section -- Frontend
+    # @section -- Client
     portName: "http"
     # -- Protocol used by the service.
-    # @section -- Frontend
+    # @section -- Client
     protocol: "TCP"
     # -- Extra service ports.
-    # @section -- Frontend
+    # @section -- Client
     extraPorts: []
     # - port: 9090
     #   targetPort: 9090
-    #   protocol: "TCP" 
+    #   protocol: "TCP"
     #   name: "metrics"
   resources:
     requests:
       # -- Memory request for the app.
-      # @section -- Api
-      memory: "64Mi"
+      # @section -- Client
+      memory: "256Mi"
       # -- CPU request for the app.
-      # @section -- Api
-      cpu: "50m"
+      # @section -- Client
+      cpu: "100m"
       # Other stuff like GPU, etc could be added here.
       # nvidia.com/gpu: "1"
       # ephemeral-storage: "100Mi"
     limits:
       # -- Memory limit for the app.
-      # @section -- Api
-      memory: "128Mi"
+      # @section -- Client
+      memory: "256Mi"
       # -- CPU limit for the app.
-      # @section -- Api
+      # @section -- Client
+      cpu: "100m"
       # Other stuff like GPU, etc could be added here.
       # nvidia.com/gpu: "1"
       # ephemeral-storage: "500Mi"
   autoscaling:
     # -- Enable Horizontal Pod Autoscaler for the app.
-    # @section -- Frontend
+    # @section -- Client
     enabled: false
     # -- Minimum number of replicas for the app.
-    # @section -- Frontend
+    # @section -- Client
     minReplicas: 1
     # -- Maximum number of replicas for the app.
-    # @section -- Frontend
+    # @section -- Client
     maxReplicas: 3
     # -- Average CPU utilization percentage for the app.
-    # @section -- Frontend
+    # @section -- Client
     targetCPUUtilizationPercentage: 80
     # -- Average memory utilization percentage for the app.
-    # @section -- Frontend
+    # @section -- Client
     targetMemoryUtilizationPercentage: 80
   # -- Revision history limit for the app.
-  # @section -- Frontend
+  # @section -- Client
   revisionHistoryLimit: 10
   # -- Default node selector for app.
-  # @section -- Frontend
+  # @section -- Client
   nodeSelector: {}
   # kubernetes.io/os: "linux"
   # kubernetes.io/arch: "amd64"
   # kubernetes.io/hostname: "node1"
   # -- Default tolerations for app.
-  # @section -- Frontend
+  # @section -- Client
   tolerations: []
   # - key: "key1"
   #   operator: "Equal"
@@ -935,7 +1294,7 @@ frontend:
   #   effect: "PreferNoSchedule"
   #   tolerationSeconds: 3600
   # -- Affinity used for app pod.
-  # @section -- Frontend
+  # @section -- Client
   affinity: {}
   # podAntiAffinity:
   #   requiredDuringSchedulingIgnoredDuringExecution:
@@ -944,30 +1303,30 @@ frontend:
   #       - key: "app.kubernetes.io/name"
   #         operator: "In"
   #         values:
-  #         - "test-app-frontend"
+  #         - "test-app-client"
   #     topologyKey: "kubernetes.io/hostname"
   serviceAccount:
     # -- Enable the service account.
-    # @section -- Frontend
+    # @section -- Client
     enabled: false
     # -- Create a service account.
-    # @section -- Frontend
+    # @section -- Client
     create: false
     # -- Annotations applied to created service account.
-    # @section -- Frontend
+    # @section -- Client
     annotations: {}
     # -- Service account name.
-    # @section -- Frontend
+    # @section -- Client
     name: ""
     # -- Should the service account access token be automount in the pod.
-    # @section -- Frontend
+    # @section -- Client
     automountServiceAccountToken: false
     role:
       # -- Should the role be created.
-      # @section -- Frontend
+      # @section -- Client
       create: false
       # -- Role rules associated with the service account.
-      # @section -- Frontend
+      # @section -- Client
       rules: []
       # - apiGroups:
       #   - argoproj.io
@@ -985,10 +1344,10 @@ frontend:
       #   - patch
     clusterRole:
       # -- Should the clusterRole be created.
-      # @section -- Frontend
+      # @section -- Client
       create: false
       # -- ClusterRole rules associated with the service account.
-      # @section -- Frontend
+      # @section -- Client
       rules: []
       # - apiGroups:
       #   - argoproj.io
@@ -1007,31 +1366,31 @@ frontend:
   ## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
   pdb:
     # -- Deploy a PodDisruptionBudget for the app
-    # @section -- Frontend
+    # @section -- Client
     enabled: false
     # -- Labels to be added to app pdb.
-    # @section -- Frontend
+    # @section -- Client
     labels: {}
     # -- Annotations to be added to app pdb.
-    # @section -- Frontend
+    # @section -- Client
     annotations: {}
     # -- Number of pods that are available after eviction as number or percentage (eg.: 50%).
-    # @section -- Frontend
+    # @section -- Client
     # @default -- `""` (defaults to 0 if not specified)
     minAvailable: ""
-    # -- Number of pods that are unavailable after eviction as number or percentage (eg.: 50%). Has higher precedence over `frontend.pdb.minAvailable`.
-    # @section -- Frontend
+    # -- Number of pods that are unavailable after eviction as number or percentage (eg.: 50%). Has higher precedence over `client.pdb.minAvailable`.
+    # @section -- Client
     maxUnavailable: ""
   networkPolicy:
     # -- Create NetworkPolicy object for the app.
-    # @section -- Frontend
+    # @section -- Client
     create: false
     # -- Policy types used in the NetworkPolicy object.
-    # @section -- Frontend
+    # @section -- Client
     policyTypes:
       - Ingress
     # -- Ingress rules for the NetworkPolicy object.
-    # @section -- Frontend
+    # @section -- Client
     ingress: []
     # - from:
     #   - ipBlock:
@@ -1048,7 +1407,7 @@ frontend:
     #   - protocol: TCP
     #     port: 6379
     # -- Egress rules for the NetworkPolicy object.
-    # @section -- Frontend
+    # @section -- Client
     egress: []
     # - to:
     #   - ipBlock:
@@ -1059,73 +1418,73 @@ frontend:
     #     endPort: 32768
   metrics:
     # -- Deploy metrics service.
-    # @section -- Frontend
+    # @section -- Client
     enabled: false
     service:
       # -- Metrics service annotations.
-      # @section -- Frontend
+      # @section -- Client
       annotations: {}
       # -- Metrics service labels.
-      # @section -- Frontend
+      # @section -- Client
       labels: {}
       # -- Metrics service port.
-      # @section -- Frontend
+      # @section -- Client
       port: 9000
       # -- Metrics service target port.
-      # @section -- Frontend
+      # @section -- Client
       targetPort: 9000
     serviceMonitor:
       # -- Enable a prometheus ServiceMonitor.
-      # @section -- Frontend
+      # @section -- Client
       enabled: false
       # -- Prometheus ServiceMonitor labels.
-      # @section -- Frontend
+      # @section -- Client
       labels: {}
       # -- Prometheus ServiceMonitor annotations.
-      # @section -- Frontend
+      # @section -- Client
       annotations: {}
       endpoints:
         - basicAuth:
             # -- The secret in the service monitor namespace that contains the username for authentication.
-            # @section -- Frontend
+            # @section -- Client
             username: ""
             # -- The secret in the service monitor namespace that contains the password for authentication.
-            # @section -- Frontend
+            # @section -- Client
             password: ""
           bearerTokenSecret:
             # -- Secret name to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator.
-            # @section -- Frontend
+            # @section -- Client
             name: ""
             # -- Secret key to mount to read bearer token for scraping targets. The secret needs to be in the same namespace as the service monitor and accessible by the Prometheus Operator.
-            # @section -- Frontend
+            # @section -- Client
             key: ""
           # -- Prometheus ServiceMonitor interval.
-          # @section -- Frontend
+          # @section -- Client
           interval: "30s"
           # -- Prometheus ServiceMonitor scrapeTimeout. If empty, Prometheus uses the global scrape timeout unless it is less than the target's scrape interval value in which the latter is used.
-          # @section -- Frontend
+          # @section -- Client
           scrapeTimeout: "10s"
           # -- Path used by the Prometheus ServiceMonitor to scrape metrics.
-          # @section -- Frontend
+          # @section -- Client
           path: "/metrics"
           # -- When true, honorLabels preserves the metric’s labels when they collide with the target’s labels.
-          # @section -- Frontend
+          # @section -- Client
           honorLabels: false
           # -- Prometheus RelabelConfigs to apply to samples before scraping.
-          # @section -- Frontend
+          # @section -- Client
           relabelings: []
           # -- Prometheus MetricRelabelConfigs to apply to samples before ingestion.
-          # @section -- Frontend
+          # @section -- Client
           metricRelabelings: []
           # -- Prometheus ServiceMonitor selector.
-          # @section -- Frontend
+          # @section -- Client
           selector: {}
           # prometheus: kube-prometheus
           # -- Prometheus ServiceMonitor scheme.
-          # @section -- Frontend
+          # @section -- Client
           scheme: ""
           # -- Prometheus ServiceMonitor tlsConfig.
-          # @section -- Frontend
+          # @section -- Client
           tlsConfig: {}
 
 # -- Add extra specs dynamically to this chart.
@@ -1136,15 +1495,7 @@ extraObjects: []
 #   metadata:
 #     name: my-configmap
 #   data:
-#     key: {{ .Values.fullname }}
-# - |
-#   apiVersion: v1
-#   kind: Secret
-#   metadata:
-#     name: my-secret
-#   type: Opaque
-#   data:
-#     password: {{ "secretpassword" | b64enc | quote }}
+#     key: test
 # - apiVersion: secrets.hashicorp.com/v1beta1
 #   kind: VaultStaticSecret
 #   metadata:
@@ -1163,7 +1514,7 @@ extraObjects: []
 #     hmacSecretData: true
 #     rolloutRestartTargets:
 #     - kind: Deployment
-#       name: api
+#       name: server
 #     destination:
 #       create: true
 #       overwrite: true
@@ -1173,3 +1524,24 @@ extraObjects: []
 #         foo/bar: "baz"
 #       name: foo
 #       type: "Opaque"
+
+## Additional services comming from dependencies can be configured below.
+## Ref: https://artifacthub.io/packages/helm/this-is-tobi-helm-charts/cnpg-cluster
+# cnpg:
+#   enabled: false
+#   fullnameOverride: server-pg-cluster
+#   imageName: ghcr.io/cloudnative-pg/postgresql:17.6
+#   mode: primary
+#   dbName: server
+#   credentials:
+#     username: server
+#   pvcSize:
+#     data: 3Gi
+#     wal: 2Gi
+#   resources:
+#     requests:
+#       cpu: 250m
+#       memory: 512Mi
+#     limits:
+#       cpu: 500m
+#       memory: 1Gi
