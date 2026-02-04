@@ -1,0 +1,21 @@
+{{- if .Values.server.pdb.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ printf "%s-%s" (include "helper.fullname" .) "server" }}
+  labels: {{- (include "helper.labels" (dict "root" . "componentName" "server")) | nindent 4 }}
+  {{- if .Values.server.pdb.labels }}
+    {{- toYaml .Values.server.pdb.labels | nindent 4 }}
+  {{- end }}
+  {{- if .Values.server.pdb.annotations }}
+  annotations: {{- toYaml .Values.server.pdb.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.server.pdb.maxUnavailable }}
+  maxUnavailable: {{ . }}
+  {{- else }}
+  minAvailable: {{ .Values.server.pdb.minAvailable | default 0 }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "helper.selectorLabels" (dict "root" . "componentName" "server") | nindent 6 }}
+{{- end }}

@@ -1,11 +1,12 @@
-# See https://github.com/helm/chart-testing/blob/main/doc/ct_lint.md
+remote: origin
 target-branch: main
 chart-dirs:
 - charts
-helm-extra-args: --timeout 600s
-check-version-increment: true
+helm-extra-args: ''
+validate-chart-schema: true
+validate-chart-values: true
 validate-maintainers: false
-excluded-charts:
-- unstable-chart
-chart-repos: []
-# - bitnami=https://charts.bitnami.com/bitnami
+validate-yaml: true
+exclude-deprecated: true
+excluded-charts: []
+debug: true
