@@ -1,0 +1,27 @@
+global:
+  ingress:
+    enabled: true
+    annotations: {}
+    labels: {}
+    hosts:
+    - backend:
+        serviceName: "test-app-server"
+        portNumber: 80
+      name: "tobi-preprod.sdid-app-hp.cpin.numerique-interieur.com"
+      pathType: "Prefix"
+      path: "/api"
+    - backend:
+        serviceName: "test-app-client"
+        portNumber: 80
+      name: "tobi-preprod.sdid-app-hp.cpin.numerique-interieur.com"
+      pathType: "Prefix"
+      path: "/"
+    tls:
+    - secretName: tobi-preprod.sdid-app-hp.cpin.numerique-interieur.com-tls
+      hosts:
+      - tobi-preprod.sdid-app-hp.cpin.numerique-interieur.com
+
+
+server:
+  env:
+    API_PORT: "8080"
