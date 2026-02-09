@@ -18,6 +18,23 @@ global:
       hosts:
       - "tobi-dev.sdid-app-hp.cpin.numerique-interieur.com"
 
-client:
-  env:
-    VITE_API_URL: "https://tobi-dev.sdid-app-hp.cpin.numerique-interieur.com/api"
+extraObjects:
+- apiVersion: "secrets.hashicorp.com/v1beta1"
+  kind: "VaultStaticSecret"
+  metadata:
+    name: "test-app-vso"
+  spec:
+    mount: "tobi"
+    vaultAuthRef: "vault-auth"
+    path: "dev/test-app"
+    type: "kv-v2"
+    refreshAfter: "30s"
+    hmacSecretData: true
+    rolloutRestartTargets:
+    - kind: "Deployment"
+      name: "test-app-server"
+    destination:
+      create: true
+      overwrite: true
+      name: "test-app-vso"
+      type: "Opaque"
