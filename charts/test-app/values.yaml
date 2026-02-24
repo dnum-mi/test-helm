@@ -200,6 +200,7 @@ server:
           serviceName: ""
           # -- Port used by the backend service linked to the host record (leave null to use the app service port).
           # @section -- Server
+          # @schema type:[integer, null]
           portNumber: null
         # -- Name of the host record.
         # @section -- Server
@@ -864,6 +865,7 @@ client:
           serviceName: ""
           # -- Port used by the backend service linked to the host record (leave null to use the app service port).
           # @section -- Client
+          # @schema type:[integer, null]
           portNumber: null
         # -- Name of the host record.
         # @section -- Client
