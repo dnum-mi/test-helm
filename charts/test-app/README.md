@@ -1,6 +1,6 @@
 # test-app
 
-![Version: 0.2.3-rc](https://img.shields.io/badge/Version-0.2.3--rc-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.2-rc](https://img.shields.io/badge/AppVersion-0.1.2--rc-informational?style=flat-square)
+![Version: 0.2.3-rc.1](https://img.shields.io/badge/Version-0.2.3--rc.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.2-rc](https://img.shields.io/badge/AppVersion-0.1.2--rc-informational?style=flat-square)
 
 A Helm chart to deploy test-app.
 
@@ -107,7 +107,7 @@ A Helm chart to deploy test-app.
 | client.ingress.annotations | object | `{}` | Additional ingress annotations. |
 | client.ingress.className | string | `""` | Defines which ingress controller will implement the resource. |
 | client.ingress.enabled | bool | `false` | Whether or not ingress should be enabled. |
-| client.ingress.hosts[0].backend.portNumber | string | `nil` | Port used by the backend service linked to the host record (leave null to use the app service port). |
+| client.ingress.hosts[0].backend.portNumber | string | `nil` | Port used by the backend service linked to the host record (leave null to use the app service port). @schema type:[integer, null] |
 | client.ingress.hosts[0].backend.serviceName | string | `""` | Name of the backend service linked to the host record (leave empty to use the app service). |
 | client.ingress.hosts[0].name | string | `"domain.local"` | Name of the host record. |
 | client.ingress.hosts[0].path | string | `"/"` | Path of the host record to manage routing. |
@@ -323,7 +323,7 @@ A Helm chart to deploy test-app.
 | server.ingress.annotations | object | `{}` | Additional ingress annotations. |
 | server.ingress.className | string | `""` | Defines which ingress controller will implement the resource. |
 | server.ingress.enabled | bool | `false` | Whether or not ingress should be enabled. |
-| server.ingress.hosts[0].backend.portNumber | string | `nil` | Port used by the backend service linked to the host record (leave null to use the app service port). |
+| server.ingress.hosts[0].backend.portNumber | string | `nil` | Port used by the backend service linked to the host record (leave null to use the app service port). @schema type:[integer, null] |
 | server.ingress.hosts[0].backend.serviceName | string | `""` | Name of the backend service linked to the host record (leave empty to use the app service). |
 | server.ingress.hosts[0].name | string | `"domain.local"` | Name of the host record. |
 | server.ingress.hosts[0].path | string | `"/"` | Path of the host record to manage routing. |
