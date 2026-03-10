@@ -10,13 +10,16 @@ on:
 
 jobs:
   release-charts:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/release-helm.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/release-helm.yml@v0
+    permissions:
+      contents: write
+      packages: write
     with:
       CHARTS_DIR: ./charts
       HELM_REPOS: "bitnami=https://charts.bitnami.com/bitnami,hashicorp=https://helm.releases.hashicorp.com,cnpg=https://cloudnative-pg.github.io/charts"
 
   sync-cpin:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/sync-cpin.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/sync-cpin.yml@v0
     needs:
     - release-charts
     permissions:

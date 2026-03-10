@@ -62,12 +62,10 @@ on:
 
 jobs:
   bump-chart:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/update-helm-chart.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/update-helm-chart.yml@v0
     permissions:
-      issues: write
       pull-requests: write
       contents: write
-      actions: write
     with:
       RUN_MODE: ${{ inputs.RUN_MODE }}
       CHART_NAME: ${{ inputs.CHART_NAME }}

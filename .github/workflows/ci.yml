@@ -25,14 +25,14 @@ jobs:
       run: echo "Exposing env vars"
 
   lint-commits:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/lint-commits.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/lint-commits.yml@v0
     if: ${{ !github.event.pull_request.draft }}
     permissions:
       pull-requests: read
       contents: read
 
   lint-helm-docs:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/lint-helm.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/lint-helm.yml@v0
     needs:
     - expose-vars
     permissions:
@@ -44,7 +44,7 @@ jobs:
       LINT_DOCS: true
 
   lint-helm-charts:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/lint-helm.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/lint-helm.yml@v0
     needs:
     - expose-vars
     permissions:
@@ -56,7 +56,7 @@ jobs:
       LINT_DOCS: false
 
   test-helm-charts:
-    uses: dnum-mi/fabnum-cicd/.github/workflows/test-helm.yml@main
+    uses: dnum-mi/fabnum-cicd/.github/workflows/test-helm.yml@v0
     needs:
     - expose-vars
     with:
