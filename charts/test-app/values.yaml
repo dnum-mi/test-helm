@@ -314,7 +314,7 @@ server:
   # @section -- Server
   initContainers: []
   # - name: wait-for-keycloak
-  #   image: docker.io/curlimages/curl:latest
+  #   image: docker.io/curlimages/curl:8.18.0
   #   command:
   #   - "/bin/sh"
   #   - "-c"
@@ -606,7 +606,7 @@ server:
     targetMemoryUtilizationPercentage: 80
   # -- Revision history limit for the app.
   # @section -- Server
-  revisionHistoryLimit: 10
+  revisionHistoryLimit: 3
   # -- Default node selector for app.
   # @section -- Server
   nodeSelector: {}
@@ -979,7 +979,7 @@ client:
   # @section -- Client
   initContainers: []
   # - name: wait-for-keycloak
-  #   image: docker.io/curlimages/curl:latest
+  #   image: docker.io/curlimages/curl:8.18.0
   #   command:
   #   - "/bin/sh"
   #   - "-c"
@@ -1271,7 +1271,7 @@ client:
     targetMemoryUtilizationPercentage: 80
   # -- Revision history limit for the app.
   # @section -- Client
-  revisionHistoryLimit: 10
+  revisionHistoryLimit: 3
   # -- Default node selector for app.
   # @section -- Client
   nodeSelector: {}

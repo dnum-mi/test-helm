@@ -152,7 +152,7 @@ servicename:
     fsGroup: 2000
   initContainers:
   - name: wait-for-keycloak
-    image: docker.io/curlimages/curl:latest
+    image: docker.io/curlimages/curl:8.18.0
     command:
     - "/bin/sh"
     - "-c"

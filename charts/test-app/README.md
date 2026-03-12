@@ -1,6 +1,6 @@
 # test-app
 
-![Version: 0.2.4-rc](https://img.shields.io/badge/Version-0.2.4--rc-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.3-rc](https://img.shields.io/badge/AppVersion-0.1.3--rc-informational?style=flat-square)
+![Version: 0.2.5](https://img.shields.io/badge/Version-0.2.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.1.3-rc](https://img.shields.io/badge/AppVersion-0.1.3--rc-informational?style=flat-square)
 
 A Helm chart to deploy test-app.
 
@@ -51,7 +51,7 @@ A Helm chart to deploy test-app.
 | client.podLabels | object | `{}` | Labels for the app deployed pods. |
 | client.podSecurityContext | object | `{}` | Toggle and define pod-level security context. |
 | client.replicaCount | int | `1` | The number of application controller pods to run. |
-| client.revisionHistoryLimit | int | `10` | Revision history limit for the app. |
+| client.revisionHistoryLimit | int | `3` | Revision history limit for the app. |
 | client.securityContext | object | `{}` | Toggle and define container-level security context. |
 | client.statefulset | bool | `false` | Should the app run as a StatefulSet instead of a Deployment. |
 | client.tolerations | list | `[]` | Default tolerations for app. |
@@ -267,7 +267,7 @@ A Helm chart to deploy test-app.
 | server.podLabels | object | `{}` | Labels for the app deployed pods. |
 | server.podSecurityContext | object | `{}` | Toggle and define pod-level security context. |
 | server.replicaCount | int | `1` | The number of application controller pods to run. |
-| server.revisionHistoryLimit | int | `10` | Revision history limit for the app. |
+| server.revisionHistoryLimit | int | `3` | Revision history limit for the app. |
 | server.securityContext | object | `{}` | Toggle and define container-level security context. |
 | server.statefulset | bool | `false` | Should the app run as a StatefulSet instead of a Deployment. |
 | server.tolerations | list | `[]` | Default tolerations for app. |
