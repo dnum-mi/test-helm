@@ -105,3 +105,5 @@ jobs:
       PRERELEASE_IDENTIFIER: ${{ inputs.PRERELEASE_IDENTIFIER }}
       AUTOMERGE_PRERELEASE: ${{ inputs.AUTOMERGE_PRERELEASE }}
       AUTOMERGE_RELEASE: ${{ inputs.AUTOMERGE_RELEASE }}
+    secrets:
+      GH_PAT: ${{ secrets.GH_PAT }} # Required for automerge PRs
