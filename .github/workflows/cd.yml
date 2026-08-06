@@ -22,8 +22,6 @@ jobs:
     uses: dnum-mi/fabnum-cicd/.github/workflows/sync-cpin.yml@v0
     needs:
     - release-charts
-    permissions:
-      contents: write
     with:
       GITLAB_URL: ${{ vars.GITLAB_URL }}
       GIT_MIRROR_PROJECT_ID: ${{ vars.GIT_MIRROR_PROJECT_ID }}

@@ -32,15 +32,20 @@ on:
         type: string
         default: rc
       AUTOMERGE_PRERELEASE:
-        description: Automatically merge the PR when UPGRADE_TYPE is 'prerelease' (requires GH_PAT)
+        description: Automatically merge the PR when UPGRADE_TYPE is 'prerelease' (requires an App or GH_PAT credential)
         required: false
         type: boolean
         default: false
       AUTOMERGE_RELEASE:
-        description: Automatically merge the PR when UPGRADE_TYPE is not 'prerelease' (requires GH_PAT)
+        description: Automatically merge the PR when UPGRADE_TYPE is not 'prerelease' (requires an App or GH_PAT credential)
         required: false
         type: boolean
         default: false
+      AUTOMERGE_METHOD:
+        description: How the chart update PR is merged when automerge is enabled - 'auto' (queue, needs Allow auto-merge) or 'admin' (merge immediately)
+        required: false
+        type: string
+        default: auto
   workflow_dispatch:
     inputs:
       RUN_MODE:
@@ -80,15 +85,23 @@ on:
         type: string
         default: rc
       AUTOMERGE_PRERELEASE:
-        description: Automatically merge the PR when UPGRADE_TYPE is 'prerelease' (requires GH_PAT)
+        description: Automatically merge the PR when UPGRADE_TYPE is 'prerelease' (requires an App or GH_PAT credential)
         required: false
         type: boolean
         default: false
       AUTOMERGE_RELEASE:
-        description: Automatically merge the PR when UPGRADE_TYPE is not 'prerelease' (requires GH_PAT)
+        description: Automatically merge the PR when UPGRADE_TYPE is not 'prerelease' (requires an App or GH_PAT credential)
         required: false
         type: boolean
         default: false
+      AUTOMERGE_METHOD:
+        description: How the chart update PR is merged when automerge is enabled
+        required: false
+        type: choice
+        options:
+        - auto
+        - admin
+        default: auto
 
 jobs:
   bump-chart:
@@ -105,5 +118,7 @@ jobs:
       PRERELEASE_IDENTIFIER: ${{ inputs.PRERELEASE_IDENTIFIER }}
       AUTOMERGE_PRERELEASE: ${{ inputs.AUTOMERGE_PRERELEASE }}
       AUTOMERGE_RELEASE: ${{ inputs.AUTOMERGE_RELEASE }}
+      AUTOMERGE_METHOD: ${{ inputs.AUTOMERGE_METHOD }}
     secrets:
-      GH_PAT: ${{ secrets.GH_PAT }} # Required for automerge PRs
+      APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
