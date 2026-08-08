@@ -4,7 +4,10 @@ on:
   workflow_call:
     inputs:
       RUN_MODE:
-        description: Execution mode 'caller' (trigger remote repo workflow) or 'called' (update chart in current repo)
+        description: >-
+          Delivery mode sent by the dispatching repository - always 'called'.
+          Declared because GitHub rejects a dispatch carrying an input this
+          workflow does not declare; the job below pins its own style anyway.
         required: false
         type: string
         default: called
@@ -49,11 +52,13 @@ on:
   workflow_dispatch:
     inputs:
       RUN_MODE:
-        description: Execution mode 'caller' (trigger remote repo workflow) or 'called' (update chart in current repo)
+        description: >-
+          Accepted for dispatch compatibility only - this repository always
+          delivers the bump as a pull request, because cd.yml releases the
+          chart on push to main.
         required: false
         type: choice
         options:
-        - caller
         - called
         default: called
       CHART_DIR:
@@ -117,7 +122,9 @@ jobs:
       pull-requests: write
       contents: write
     with:
-      RUN_MODE: ${{ inputs.RUN_MODE }}
+      # Pinned, not forwarded: this repository is PR-gated - cd.yml releases the
+      # chart on push to main, so the bump has to arrive as a pull request.
+      RUN_MODE: called
       CHART_DIR: ${{ inputs.CHART_DIR }}
       CHART_NAME: ${{ inputs.CHART_NAME }}
       APP_VERSION: ${{ inputs.APP_VERSION }}
