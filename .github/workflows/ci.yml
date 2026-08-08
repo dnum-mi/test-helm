@@ -11,6 +11,12 @@ on:
     - 'charts/**'
   workflow_dispatch:
 
+# Only the newest push to a pull request is worth linting; cancel superseded
+# runs. Safe to cancel here, unlike cd.yml, because nothing is published.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   CT_CONF_PATH: ci/configs/ct.yaml
 
@@ -18,6 +24,7 @@ jobs:
   expose-vars:
     runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request.draft }}
+    permissions: {}
     outputs:
       CT_CONF_PATH: ${{ env.CT_CONF_PATH }}
     steps:
@@ -59,5 +66,37 @@ jobs:
     uses: dnum-mi/fabnum-cicd/.github/workflows/test-helm.yml@v0
     needs:
     - expose-vars
+    permissions:
+      contents: read
     with:
       CT_CONF_PATH: ${{ needs.expose-vars.outputs.CT_CONF_PATH }}
+
+  # Workaround for required status check in protection branches (see. https://github.com/orgs/community/discussions/13690)
+  all-jobs-passed:
+    name: Check jobs status
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    permissions: {}
+    # Every job in this workflow must be listed here, or a failure in the
+    # missing one leaves the gate green and the branch mergeable.
+    needs:
+    - expose-vars
+    - lint-commits
+    - lint-helm-docs
+    - lint-helm-charts
+    - test-helm-charts
+    steps:
+    - name: Check status of all required jobs
+      run: |-
+        NEEDS_CONTEXT='${{ toJson(needs) }}'
+        JOB_IDS=$(echo "$NEEDS_CONTEXT" | jq -r 'keys[]')
+        for JOB_ID in $JOB_IDS; do
+          RESULT=$(echo "$NEEDS_CONTEXT" | jq -r ".[\"$JOB_ID\"].result")
+          echo "$JOB_ID job result: $RESULT"
+          if [[ $RESULT != "success" && $RESULT != "skipped" ]]; then
+            echo "***"
+            echo "Error: The $JOB_ID job did not pass."
+            exit 1
+          fi
+        done
+        echo "All jobs passed or were skipped."
