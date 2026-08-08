@@ -103,6 +103,13 @@ on:
         - admin
         default: auto
 
+# Two app releases dispatching a bump for the same chart would otherwise race on
+# the same branch and pull request. Serialize per chart; never cancel, or a bump
+# is silently dropped and the chart stays behind the app it tracks.
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.CHART_NAME }}
+  cancel-in-progress: false
+
 jobs:
   bump-chart:
     uses: dnum-mi/fabnum-cicd/.github/workflows/update-helm-chart.yml@v0

@@ -8,6 +8,12 @@ on:
     - 'charts/**'
   workflow_dispatch:
 
+# Chart releases publish to the same index; overlapping runs would race on it.
+# Queue rather than cancel - a half-published chart is worse than a slow one.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release-charts:
     uses: dnum-mi/fabnum-cicd/.github/workflows/release-helm.yml@v0
@@ -22,6 +28,8 @@ jobs:
     uses: dnum-mi/fabnum-cicd/.github/workflows/sync-cpin.yml@v0
     needs:
     - release-charts
+    # Posts to the GitLab mirror API and touches nothing on GitHub.
+    permissions: {}
     with:
       GITLAB_URL: ${{ vars.GITLAB_URL }}
       GIT_MIRROR_PROJECT_ID: ${{ vars.GIT_MIRROR_PROJECT_ID }}
