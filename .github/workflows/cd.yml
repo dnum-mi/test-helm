@@ -22,6 +22,17 @@ jobs:
       packages: write
     with:
       CHARTS_DIR: ./charts
+      # Both channels are set explicitly, against the workflow's defaults
+      # (CREATE_GITHUB_RELEASE on, PUBLISH_OCI off), because this repository is
+      # private. The classic channel needs index.yaml served from a pages
+      # branch, and a GitHub Pages site is public even when its repository is
+      # not - anything below GitHub Enterprise Cloud cannot restrict it - so it
+      # would publish a catalogue of our chart names and versions to the open
+      # internet. OCI has no such problem: the ghcr.io package follows the
+      # repository's visibility and consumers authenticate with
+      # `helm registry login`.
+      CREATE_GITHUB_RELEASE: false
+      PUBLISH_OCI: true
       HELM_REPOS: "bitnami=https://charts.bitnami.com/bitnami,hashicorp=https://helm.releases.hashicorp.com,cnpg=https://cloudnative-pg.github.io/charts"
 
   sync-cpin:
