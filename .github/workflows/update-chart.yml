@@ -25,22 +25,22 @@ on:
         required: true
         type: string
       UPGRADE_TYPE:
-        description: Should update 'major', 'minor', 'patch', 'prerelease' or 'auto' (level derived from the appVersion delta; requires APP_VERSION)
+        description: Should update 'auto' (default - level derived from the appVersion delta, patch fallback when there is no delta to read), 'major', 'minor', 'patch' or 'prerelease'
         required: false
         type: string
-        default: patch
+        default: auto
       PRERELEASE_IDENTIFIER:
-        description: Identifier used when UPGRADE_TYPE=prerelease (e.g. rc)
+        description: Prerelease identifier, used when the bump enters the prerelease flow (e.g. rc)
         required: false
         type: string
         default: rc
       AUTOMERGE_PRERELEASE:
-        description: Automatically merge the PR when UPGRADE_TYPE is 'prerelease' (requires an App or GH_PAT credential)
+        description: Automatically merge the PR when the bump is a prerelease (requires an App or GH_PAT credential)
         required: false
         type: boolean
         default: false
       AUTOMERGE_RELEASE:
-        description: Automatically merge the PR when UPGRADE_TYPE is not 'prerelease' (requires an App or GH_PAT credential)
+        description: Automatically merge the PR when the bump is not a prerelease (requires an App or GH_PAT credential)
         required: false
         type: boolean
         default: false
@@ -75,28 +75,28 @@ on:
         required: true
         type: string
       UPGRADE_TYPE:
-        description: Should update 'major', 'minor', 'patch', 'prerelease' or 'auto'
+        description: Should update 'auto', 'major', 'minor', 'patch' or 'prerelease'
         required: false
         type: choice
         options:
+        - auto
         - major
         - minor
         - patch
         - prerelease
-        - auto
-        default: patch
+        default: auto
       PRERELEASE_IDENTIFIER:
-        description: Identifier used when UPGRADE_TYPE=prerelease (e.g. rc)
+        description: Prerelease identifier, used when the bump enters the prerelease flow (e.g. rc)
         required: false
         type: string
         default: rc
       AUTOMERGE_PRERELEASE:
-        description: Automatically merge the PR when UPGRADE_TYPE is 'prerelease' (requires an App or GH_PAT credential)
+        description: Automatically merge the PR when the bump is a prerelease (requires an App or GH_PAT credential)
         required: false
         type: boolean
         default: false
       AUTOMERGE_RELEASE:
-        description: Automatically merge the PR when UPGRADE_TYPE is not 'prerelease' (requires an App or GH_PAT credential)
+        description: Automatically merge the PR when the bump is not a prerelease (requires an App or GH_PAT credential)
         required: false
         type: boolean
         default: false
