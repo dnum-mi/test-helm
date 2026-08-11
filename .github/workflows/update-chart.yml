@@ -25,7 +25,7 @@ on:
         required: true
         type: string
       UPGRADE_TYPE:
-        description: Should update 'major', 'minor', 'patch' or 'prerelease'
+        description: Should update 'major', 'minor', 'patch', 'prerelease' or 'auto' (level derived from the appVersion delta; requires APP_VERSION)
         required: false
         type: string
         default: patch
@@ -75,7 +75,7 @@ on:
         required: true
         type: string
       UPGRADE_TYPE:
-        description: Should update 'major', 'minor' or 'patch'
+        description: Should update 'major', 'minor', 'patch', 'prerelease' or 'auto'
         required: false
         type: choice
         options:
@@ -83,6 +83,7 @@ on:
         - minor
         - patch
         - prerelease
+        - auto
         default: patch
       PRERELEASE_IDENTIFIER:
         description: Identifier used when UPGRADE_TYPE=prerelease (e.g. rc)
