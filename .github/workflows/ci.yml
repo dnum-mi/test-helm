@@ -35,7 +35,6 @@ jobs:
     uses: dnum-mi/fabnum-cicd/.github/workflows/lint-commits.yml@v0
     if: ${{ !github.event.pull_request.draft }}
     permissions:
-      pull-requests: read
       contents: read
 
   lint-helm-docs:
