@@ -39,6 +39,11 @@ jobs:
     uses: dnum-mi/fabnum-cicd/.github/workflows/sync-cpin.yml@v0
     needs:
     - release-charts
+    # Opt-in: set the repository variable CPIN_AUTO_SYNC to 'true' to sync a
+    # chart release to CPiN automatically (gh variable set CPIN_AUTO_SYNC --body true).
+    # Off by default while the GitLab mirror is not reachable from the runners;
+    # until then trigger the mirror pipeline by hand.
+    if: ${{ vars.CPIN_AUTO_SYNC == 'true' }}
     # Posts to the GitLab mirror API and touches nothing on GitHub.
     permissions: {}
     with:
